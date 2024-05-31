@@ -4,6 +4,7 @@ from handlers import start, help_command, custom_command, button, balance, claim
 import nest_asyncio
 import asyncio
 
+
 # Apply nest_asyncio to allow nested asyncio loops
 nest_asyncio.apply()
 
@@ -43,5 +44,8 @@ async def main() -> None:
 
 
 
+
+
 if __name__ == '__main__':
     asyncio.run(main())
+
