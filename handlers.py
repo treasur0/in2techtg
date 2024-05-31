@@ -1,8 +1,8 @@
 import logging
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
-from telegram.ext import CallbackContext, CommandHandler, Updater
-from user_management import get_balance, claim_balance, add_referral, get_referral_link
 import uuid
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
+from telegram.ext import CallbackContext, CommandHandler, Updater, CallbackQueryHandler
+from user_management import get_balance, claim_balance, add_referral, get_referral_link
 
 logger = logging.getLogger(__name__)
 
@@ -59,20 +59,37 @@ async def button(update: Update, context: CallbackContext) -> None:
     """Handle button press."""
     query = update.callback_query
     query_data = query.data
-    if query_data == 'claim':
-        await claim_money(update, context)
-    elif query_data == 'referral':
-        await referral(update, context)
+    if query_data == 'buy':
+        keyboard = [
+            [InlineKeyboardButton("Bitcoin", callback_data='buy_bitcoin')],
+            [InlineKeyboardButton("Tether", callback_data='buy_tether')],
+            [InlineKeyboardButton("USDT", callback_data='buy_usdt')],
+            [InlineKeyboardButton("Others", callback_data='buy_others')]
+        ]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        await query.edit_message_text(text="Would you want to buy:", reply_markup=reply_markup)
+
+    elif query_data == 'sell':
+        keyboard = [
+            [InlineKeyboardButton("Bitcoin", callback_data='sell_bitcoin')],
+            [InlineKeyboardButton("Tether", callback_data='sell_tether')],
+            [InlineKeyboardButton("USDT", callback_data='sell_usdt')],
+            [InlineKeyboardButton("Others", callback_data='sell_others')]
+        ]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        await query.edit_message_text(text="Would you want to sell:", reply_markup=reply_markup)
+
     else:
         await query.answer()
         await query.edit_message_text(text=f"Selected option: {query_data}")
-
+    if query_data == 'claim':
+        await claim_money(update, context)    
+    elif query_data == 'referral':
+        await referral(update, context)
     
-
-
-
-
-
+    else:
+        await query.answer()
+        await query.edit_message_text(text=f"Selected option: {query_data}")
 
 
 
@@ -102,24 +119,5 @@ async def claim_money(update: Update, context: CallbackContext) -> None:
     await update.message.reply_text(result)
 
 
-
-async def ref_command(update: Update, context: CallbackContext) -> None:
-    """Handle the /ref command and reply with the referral link."""
-    user_id = update.effective_user.id
-    referral_code = get_referral_code(user_id)
-    referral_link = get_referral_link(referral_code)
-    await update.message.reply_text(f'Your referral link is: {referral_link}')
-
-# Register the command handler with the dispatcher
-ref_handler = CommandHandler('ref', ref_command)
-
-
-# handlers.py
-
-
-
-# Other functions remain unchanged...
-
-
-
-# Define the other functions (help_command, custom_command, echo, balance, claim_money) here...
+if __name__ == '__main__':
+    main()
